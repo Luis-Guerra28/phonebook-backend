@@ -47,6 +47,10 @@ let persons = [
   },
 ];
 
+app.get("/", (request, response) => {
+  response.json("<h1>Phone Book is online</h1>");
+});
+
 app.get("/api/persons", (request, response) => {
   response.json(persons);
 });
