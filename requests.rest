@@ -1,20 +1,20 @@
 ### Get all persons
-GET http://localhost:3001/api/persons
+GET https://phonebook-backend-pnn6.onrender.com/api/persons
 
 ### API info
-GET http://localhost:3001/api/info
+GET https://phonebook-backend-pnn6.onrender.com/api/info
 
 ### Get a person with id valid
-GET http://localhost:3001/api/persons/2
+GET https://phonebook-backend-pnn6.onrender.com/api/persons/2
 
 ### Get a person with id invalid
-GET http://localhost:3001/api/persons/a
+GET https://phonebook-backend-pnn6.onrender.com/api/persons/a
 
 ### Delete a person
-DELETE http://localhost:3001/api/persons/2
+DELETE https://phonebook-backend-pnn6.onrender.com/api/persons/2
 
 ### Add a new person
-POST http://localhost:3001/api/persons HTTP/1.1
+POST https://phonebook-backend-pnn6.onrender.com/api/persons HTTP/1.1
 content-type: application/json
 
 {
@@ -23,7 +23,7 @@ content-type: application/json
 }
 
 ### Wrong name validation test
-POST http://localhost:3001/api/persons HTTP/1.1
+POST https://phonebook-backend-pnn6.onrender.com/api/persons HTTP/1.1
 content-type: application/json
 
 {
