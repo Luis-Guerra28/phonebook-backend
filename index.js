@@ -1,34 +1,29 @@
 require("dotenv").config();
-const mongoose = require("mongoose");
 const express = require("express");
 const morgan = require("morgan");
 const app = express();
+const Person = require("./models/person");
 
 app.use(express.json());
 app.use(express.static("dist"));
 
-const url = process.env.MONGODB_URI;
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message);
 
-mongoose.set("strictQuery", false);
-mongoose
-  .connect(url)
-  .then((result) => {
-    console.log("connecting to", url);
-  })
-  .catch((error) => {
-    console.log("error connecting to MongoDB", error.message);
-  });
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
 
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-});
+  next(error);
+};
 
-const Person = mongoose.model("Person", personSchema);
+const unknowEndPoint = (request, response) => {
+  response.status(404).send({ error: "unknow endpoint" });
+};
 
 morgan.token("content", (request, response) => {
   const data = request.body;
-  return JSON.stringify({ name: data.name, number: data.number });
+  return JSON.stringify(data);
 });
 
 app.use(
@@ -46,16 +41,8 @@ app.use(
   })
 );
 
-let persons = [];
-
 app.get("/", (request, response) => {
   response.json("<h1>Phone Book is online</h1>");
-});
-
-app.get("/api/persons", (request, response) => {
-  Person.find({}).then((persons) => {
-    response.json(persons);
-  });
 });
 
 app.get("/api/info", (request, response) => {
@@ -63,27 +50,11 @@ app.get("/api/info", (request, response) => {
     <p>${new Date()}</p>`);
 });
 
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+app.get("/api/persons", (request, response) => {
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
-
-app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
-
-  response.status(204).end();
-});
-
-const generateId = () => {
-  return Math.round(Math.random() * 10000);
-};
 
 app.post("/api/persons", (request, response) => {
   const newPerson = request.body;
@@ -102,11 +73,31 @@ app.post("/api/persons", (request, response) => {
   person.save().then((personSaved) => {
     response.json(personSaved);
   });
-
-  //newPerson.id = generateId();
-  //persons = persons.concat(newPerson);
-  //response.json(newPerson);
 });
+
+app.get("/api/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
+  const person = persons.find((person) => person.id === id);
+
+  if (person) {
+    response.json(person);
+  } else {
+    response.status(404).end();
+  }
+});
+
+app.delete("/api/persons/:id", (request, response, next) => {
+  console.log(request.params.id);
+
+  Person.findByIdAndDelete(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
+});
+
+app.use(unknowEndPoint);
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
