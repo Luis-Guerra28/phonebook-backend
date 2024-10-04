@@ -58,21 +58,25 @@ app.get("/api/persons", (request, response) => {
 
 app.post("/api/persons", (request, response) => {
   const newPerson = request.body;
-
+  /* const newPerson = {
+    name: request.body.name,
+    number: request.body.number,
+  };
+ */
   if (!newPerson.name || !newPerson.number) {
     return response.status(400).json({
       error: "name or number missing",
     });
   }
 
-  const person = new Person({
-    name: newPerson.name,
-    number: newPerson.number,
-  });
+  const searchOptions = { new: true, upsert: true };
+  const query = { name: newPerson.name };
 
-  person.save().then((personSaved) => {
-    response.json(personSaved);
-  });
+  Person.findOneAndUpdate(query, newPerson, searchOptions)
+    .then((newNote) => {
+      response.json(newNote);
+    })
+    .catch((error) => next(error));
 });
 
 app.get("/api/persons/:id", (request, response) => {
@@ -95,9 +99,23 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
+app.put("/api/persons/:id", (request, response, next) => {
+  const body = request.body;
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  };
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then((updatedPerson) => {
+      response.json(updatedPerson);
+    })
+    .catch((error) => next(error));
+});
+
 app.use(unknowEndPoint);
 app.use(errorHandler);
-
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
