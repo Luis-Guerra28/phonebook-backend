@@ -12,9 +12,22 @@ mongoose
     console.log("error conecting to MongoDB", error.message);
   });
 
+const isValidNumber = (number) => /^\d{2,3}-\d*$/.test(number);
+
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+  name: {
+    type: String,
+    minLength: 3,
+    required: true,
+  },
+  number: {
+    type: String,
+    minLength: 8,
+    required: true,
+    validate: {
+      validator: isValidNumber,
+    },
+  },
 });
 
 personSchema.set("toJSON", {

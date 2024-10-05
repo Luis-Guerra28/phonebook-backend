@@ -12,6 +12,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).send({ error: error.message });
   }
 
   next(error);
@@ -56,20 +58,20 @@ app.get("/api/persons", (request, response) => {
   });
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const newPerson = request.body;
-  /* const newPerson = {
-    name: request.body.name,
-    number: request.body.number,
-  };
- */
-  if (!newPerson.name || !newPerson.number) {
+
+  /* if (!newPerson.name || !newPerson.number) {
     return response.status(400).json({
       error: "name or number missing",
     });
-  }
+  } */
 
-  const searchOptions = { new: true, upsert: true };
+  const searchOptions = {
+    new: true,
+    upsert: true,
+    runValidators: true,
+  };
   const query = { name: newPerson.name };
 
   Person.findOneAndUpdate(query, newPerson, searchOptions)
@@ -107,7 +109,10 @@ app.put("/api/persons/:id", (request, response, next) => {
     number: body.number,
   };
 
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  Person.findByIdAndUpdate(request.params.id, person, {
+    new: true,
+    runValidators: true,
+  })
     .then((updatedPerson) => {
       response.json(updatedPerson);
     })
@@ -116,6 +121,7 @@ app.put("/api/persons/:id", (request, response, next) => {
 
 app.use(unknowEndPoint);
 app.use(errorHandler);
+
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
