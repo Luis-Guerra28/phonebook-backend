@@ -1,18 +1,18 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
-const URL = process.env.MONGODB_URI;
+const URL = process.env.MONGODB_URI
 
-mongoose.set("strictQuery", false);
+mongoose.set('strictQuery', false)
 mongoose
   .connect(URL)
-  .then((result) => {
-    console.log("Connecting to", URL);
+  .then(() => {
+    console.log('Connecting to', URL)
   })
   .catch((error) => {
-    console.log("error conecting to MongoDB", error.message);
-  });
+    console.log('error conecting to MongoDB', error.message)
+  })
 
-const isValidNumber = (number) => /^\d{2,3}-\d*$/.test(number);
+const isValidNumber = (number) => /^\d{2,3}-\d*$/.test(number)
 
 const personSchema = new mongoose.Schema({
   name: {
@@ -28,14 +28,14 @@ const personSchema = new mongoose.Schema({
       validator: isValidNumber,
     },
   },
-});
+})
 
-personSchema.set("toJSON", {
+personSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
   },
-});
+})
 
-module.exports = mongoose.model("Person", personSchema);
+module.exports = mongoose.model('Person', personSchema)
